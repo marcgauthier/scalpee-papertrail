@@ -1,4 +1,4 @@
-package scalpee-papertrail
+package papertrail
 
 import (
 	"fmt"
