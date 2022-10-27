@@ -9,34 +9,44 @@ import (
 	"strings"
 )
 
+type Msg struct {
+App string 
+Time int64 
+Msg string 
+Level int
+}
+
 var debug bool = false
 
 var w *syslog.Writer
 
+var host, application string
+
 func Init(Host, Applicationname string) {
 	var err error
-	w, err = syslog.Dial("udp", Host, syslog.LOG_EMERG|syslog.LOG_DAEMON, Applicationname)
-	if err != nil {
-		log.Fatal("failed to dial syslog")
-	}
+	host = Host 
+	application = Applicationname
 }
+
+func send(msg string, level int) {
+	m := Msg{App: app, Time: time.Now().UnixNano(), Msg: msg, Level: level}
+	buf, _ := json.Marshal(m)
+
+	conn, err := net.Dial("udp", host)
+    	if err != nil {
+        	fmt.Printf("Some error %v", err)
+        	return
+    	}
+	fmt.Fprintf(conn, string(buf))
+}
+
 
 // Info example:
 //
 // Info("timezone %s", timezone)
 //
 func Info(msg string, vars ...interface{}) {
-	w.Info(fmt.Sprintf(strings.Join([]string{"[INFO ]", msg}, " "), vars...))
-}
-
-// Debug example:
-//
-// Debug("timezone %s", timezone)
-//
-func Debug(msg string, vars ...interface{}) {
-	if debug {
-		w.Debug(fmt.Sprintf(strings.Join([]string{"[DEBUG]", msg}, " "), vars...))
-	}
+	send(fmt.Sprintf(strings.Join([]string{"[INFO ]", msg}, " "), vars...), 0)
 }
 
 // Fatal example:
@@ -47,9 +57,9 @@ func Fatal(err error) {
 	pc, fn, line, _ := runtime.Caller(1)
 	// Include function name if debugging
 	if debug {
-		w.Alert(fmt.Sprintf("[FATAL] %s [%s:%s:%d]", err, runtime.FuncForPC(pc).Name(), fn, line))
+		send(fmt.Sprintf("[FATAL] %s [%s:%s:%d]", err, runtime.FuncForPC(pc).Name(), fn, line), 4)
 	} else {
-		w.Alert(fmt.Sprintf("[FATAL] %s [%s:%d]", err, fn, line))
+		send(fmt.Sprintf("[FATAL] %s [%s:%d]", err, fn, line), 4)
 	}
 }
 
@@ -61,8 +71,8 @@ func Error(err error) {
 	pc, fn, line, _ := runtime.Caller(1)
 	// Include function name if debugging
 	if debug {
-		w.Err(fmt.Sprintf("[ERROR] %s [%s:%s:%d]", err, runtime.FuncForPC(pc).Name(), fn, line))
+		send(fmt.Sprintf("[ERROR] %s [%s:%s:%d]", err, runtime.FuncForPC(pc).Name(), fn, line), 3)
 	} else {
-		w.Err(fmt.Sprintf("[ERROR] %s [%s:%d]", err, fn, line))
+		send(fmt.Sprintf("[ERROR] %s [%s:%d]", err, fn, line), 3)
 	}
 }
