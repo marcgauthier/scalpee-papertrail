@@ -16,8 +16,6 @@ Level int
 
 var debug bool = false
 
-var w *syslog.Writer
-
 var host, application string
 
 func Init(Host, Applicationname string) {
