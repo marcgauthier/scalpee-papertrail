@@ -3,7 +3,8 @@ package papertrail
 import (
 	"fmt"
 	"log"
-	"log/syslog"
+	"//log/syslog"
+	syslog "github.com/RackSec/srslog"
 	"runtime"
 	"strings"
 )
