@@ -10,10 +10,13 @@ import (
 )
 
 var debug bool = false
+var useConsole bool = true 
 
 var w *syslog.Writer
 
-func Init(Host, Applicationname string) {
+func Init(Host, Applicationname string, _debug, _console bool) {
+	debug = _debug
+	useConsole = _console
 	var err error
 	w, err = syslog.Dial("udp", Host, syslog.LOG_EMERG|syslog.LOG_DAEMON, Applicationname)
 	if err != nil {
@@ -21,8 +24,9 @@ func Init(Host, Applicationname string) {
 	}
 }
 
+const layout = "2006-01-02T15:04:05.000Z"
 func console(s string) {
-	fmt.Println(time + " " + s)
+	fmt.Println(time.Now().Format(layout) + " " + s)
 }
 
 // Info example:
